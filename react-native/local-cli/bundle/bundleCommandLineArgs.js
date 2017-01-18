@@ -18,19 +18,12 @@ module.exports = [
     default: 'ios',
   }, {
     command: '--transformer [string]',
-    description: 'Specify a custom transformer to be used (absolute path)',
-    default: require.resolve('../../packager/transformer'),
+    description: 'Specify a custom transformer to be used',
   }, {
     command: '--dev [boolean]',
     description: 'If false, warnings are disabled and the bundle is minified',
     parse: (val) => val === 'false' ? false : true,
     default: true,
-  }, {
-    command: '--prepack',
-    description: 'When passed, the output bundle will use the Prepack format.',
-  }, {
-    command: '--bridge-config [string]',
-    description: 'File name of a a JSON export of __fbBatchedBridgeConfig. Used by Prepack. Ex. ./bridgeconfig.json',
   }, {
     command: '--bundle-output <string>',
     description: 'File name where to store the resulting bundle, ex. /tmp/groups.bundle',
@@ -52,13 +45,12 @@ module.exports = [
     command: '--reset-cache',
     description: 'Removes cached files',
     default: false,
-  }, {  // @Denis 是否集成框架
-    command: '--include-framework [boolean]',
-    description: 'Whether to bundle include core modules and polyfills',
-    default: false,
-  }, { // @Denis 增加runBeforeMainModule
-    command: '--runBeforeMainModule [string]',
-    description: 'Modules required before main module',
-    required: false,
+  }, {
+  // @mc-zone
+    command: '--manifest-output [string]',
+    description: 'File name where to store the manifest file for bundle splitting, ex. ./output/base.manifest.json',
+  }, {
+    command: '--manifest-file [path]',
+    description: 'Path to the manifest file if want to split bundle, ex. ./output/base.manifest.json',
   },
 ];

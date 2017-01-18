@@ -22,12 +22,13 @@ jest
   .mock('../../lib/declareOpts')
   .mock('../../Resolver')
   .mock('../Bundle')
-  .mock('../PrepackBundle')
   .mock('../HMRBundle')
-  .mock('../../Activity')
+  .mock('../../Logger')
   .mock('../../lib/declareOpts');
 
 var Bundler = require('../');
+// @mc-zone
+var Bundle = require('../Bundle');
 var Resolver = require('../../Resolver');
 var sizeOf = require('image-size');
 var fs = require('fs');
@@ -36,6 +37,8 @@ describe('Bundler', function() {
 
   function createModule({
     path,
+    // @mc-zone
+    name,
     id,
     dependencies,
     isAsset,
@@ -48,7 +51,9 @@ describe('Bundler', function() {
       path,
       resolution,
       getDependencies: () => Promise.resolve(dependencies),
-      getName: () => Promise.resolve(id),
+      // @mc-zone
+      // getName: () => Promise.resolve(id),
+      getName: () => Promise.resolve(name ? name : id),
       isJSON: () => isJSON,
       isAsset: () => isAsset,
       isAsset_DEPRECATED: () => isAsset_DEPRECATED,
@@ -208,6 +213,65 @@ describe('Bundler', function() {
       });
   });
 
+  it('loads and runs asset plugins', function() {
+    jest.mock('mockPlugin1', () => {
+      return asset => {
+        asset.extraReverseHash = asset.hash.split('').reverse().join('');
+        return asset;
+      };
+    }, {virtual: true});
+
+    jest.mock('asyncMockPlugin2', () => {
+      return asset => {
+        expect(asset.extraReverseHash).toBeDefined();
+        return new Promise((resolve) => {
+          asset.extraPixelCount = asset.width * asset.height;
+          resolve(asset);
+        });
+      };
+    }, {virtual: true});
+
+    const mockAsset = {
+      scales: [1,2,3],
+      files: [
+        '/root/img/img.png',
+        '/root/img/img@2x.png',
+        '/root/img/img@3x.png',
+      ],
+      hash: 'i am a hash',
+      name: 'img',
+      type: 'png',
+    };
+    assetServer.getAssetData.mockImpl(() => mockAsset);
+
+    return bundler.bundle({
+      entryFile: '/root/foo.js',
+      runBeforeMainModule: [],
+      runModule: true,
+      sourceMapUrl: 'source_map_url',
+      assetPlugins: ['mockPlugin1', 'asyncMockPlugin2'],
+    }).then(bundle => {
+      expect(bundle.addAsset.mock.calls[1]).toEqual([{
+        __packager_asset: true,
+        fileSystemLocation: '/root/img',
+        httpServerLocation: '/assets/img',
+        width: 25,
+        height: 50,
+        scales: [1, 2, 3],
+        files: [
+          '/root/img/img.png',
+          '/root/img/img@2x.png',
+          '/root/img/img@3x.png',
+        ],
+        hash: 'i am a hash',
+        name: 'img',
+        type: 'png',
+        extraReverseHash: 'hsah a ma i',
+        extraPixelCount: 1250,
+      }]);
+    });
+  });
+
   pit('gets the list of dependencies from the resolver', function() {
     const entryFile = '/root/foo.js';
     return bundler.getDependencies({entryFile, recursive: true}).then(() =>
@@ -285,6 +349,123 @@ describe('Bundler', function() {
           '/root/img/new_image2@2x.png',
           '/root/img/new_image2@3x.png',
         ]));
+    });
+  });
+  // @mc-zone
+  describe('bundle with manifest reference', () => {
+    var otherBundler;
+    var doBundle;
+    var getModuleIdInResolver;
+    var refModule = {path: '/root/ref.js', name: '/root/ref.js', dependencies: []};
+    var moduleFoo = {path: '/root/foo.js', name: '/root/foo.js', dependencies: []};
+    var moduleBar = {path: '/root/bar.js', name: '/root/bar.js', dependencies: []};
+    var manifestReferrence = {
+      modules: {
+        [refModule.name]: {
+          id: 456
+        }
+      },
+      lastId: 10,
+    };
+
+    beforeEach(function() {
+      fs.statSync.mockImpl(function() {
+        return {
+          isDirectory: () => true
+        };
+      });
+
+      Resolver.mockImpl(function() {
+        return {
+          getDependencies: (
+            entryFile,
+            options,
+            transformOptions,
+            onProgress,
+            getModuleId
+          ) => {
+            getModuleIdInResolver = getModuleId;
+            return Promise.resolve({
+              mainModuleId: 0,
+              dependencies: [
+                createModule(refModule),
+                createModule(moduleFoo),
+                createModule(moduleBar),
+                createModule({path: '', name: 'aPolyfill.js', dependencies: [], isPolyfill:true}),
+                createModule({path: '', name: 'anotherPolyfill.js', dependencies: [], isPolyfill:true}),
+              ],
+              transformOptions,
+              getModuleId,
+              getResolvedDependencyPairs: () => [],
+            })
+          },
+          getModuleSystemDependencies: () => [],
+          wrapModule: options => Promise.resolve(options),
+        };
+      });
+
+      Bundle.mockImpl(function() {
+        const _modules = [];
+
+        return {
+          setRamGroups: jest.fn(),
+          setMainModuleId: jest.fn(),
+          finalize: jest.fn(),
+          getModules: () => {
+            return _modules;
+          },
+          addModule: (resolver, resolutionResponse, module, moduleTransport) => {
+            return _modules.push({...moduleTransport}) - 1;
+          }
+        }
+      });
+
+      otherBundler = new Bundler({
+        projectRoots: ['/root'],
+        assetServer: {
+          getAssetData: jest.fn(),
+        },
+        manifestReferrence,
+      });
+
+      doBundle = otherBundler.bundle({
+        entryFile: '/root/foo.js',
+        runBeforeMainModule: [],
+        runModule: true,
+      });
+    });
+
+    it('skip dependencies that exist in the manifest reference', function() {
+      return doBundle.then(bundle => {
+        const modulesNames = bundle.getModules().map(module => module.name);
+
+        expect(modulesNames.indexOf(refModule.name)).toBe(-1);
+        expect(modulesNames.indexOf(moduleFoo.name)).not.toBe(-1);
+        expect(modulesNames.indexOf(moduleBar.name)).not.toBe(-1);
+      });
+    });
+
+    it('skip polyfills if used manifest reference', function() {
+      return doBundle.then(bundle => {
+        expect(bundle.getModules().some(module => module.name == 'somePolyfill.js')).toBeFalsy();
+        expect(bundle.getModules().some(module => module.isPolyfill)).toBeFalsy();
+      });
+    });
+
+    it('get the moduleId from manifest reference that if module was already exists in the manifest', function() {
+      const refModuleReference = manifestReferrence.modules[refModule.name];
+      return doBundle.then(bundle => {
+        expect(getModuleIdInResolver(refModule)).toBe(refModuleReference.id);
+        expect(otherBundler._getModuleId(refModule)).toBe(refModuleReference.id);
+      });
+    });
+
+    it('create new moduleId should bigger than the lastId in the manifest', function() {
+      return doBundle.then(bundle => {
+        bundle.getModules().forEach(module => {
+          expect(module.id).toBeGreaterThan(manifestReferrence.lastId);
+        });
+      });
     });
   });
 });
