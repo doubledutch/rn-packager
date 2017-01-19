@@ -105,7 +105,7 @@ class Module {
     this._depGraphHelpers = depGraphHelpers;
     this._options = options || {};
     // @Denis 模块名称存放在moduleName属性,
-    if (!this.isPolyfill() && !this.isAsset_DEPRECATED() && !this.moduleName) {
+    if (!this.isPolyfill() && !this.moduleName) {
       this.getName().then(name => {
         this.moduleName = name;
         // console.log("isAsset", this.isAsset(),

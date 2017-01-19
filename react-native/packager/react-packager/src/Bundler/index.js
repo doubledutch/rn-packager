@@ -866,7 +866,6 @@ function createModuleIdFactory({extenalModules, startId: nextId = 0}) {
     }
     if (!(module.path in fileToIdMap)) {
       fileToIdMap[module.path] = nextId;
-      fileToIdMap[modulePath] = nextId;
       nextId += 1;
     }
     // return fileToIdMap[path];
