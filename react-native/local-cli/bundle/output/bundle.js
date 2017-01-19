@@ -42,7 +42,7 @@ function saveBundleAndMap(
     dev,
     sourcemapOutput,
     // @mc-zone
-    manifestOutput,
+    manifestOutput
   } = options;
 
   log('start');
@@ -72,6 +72,7 @@ function saveBundleAndMap(
   //   return writeBundle;
     writeTasks.push(writeMetadata, writeMap);
   }
+
   // @mc-zone
   if (manifestOutput) {
     log('Writing manifest output to:', manifestOutput);

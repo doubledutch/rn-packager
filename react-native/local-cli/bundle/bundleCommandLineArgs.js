@@ -52,5 +52,9 @@ module.exports = [
   }, {
     command: '--manifest-file [path]',
     description: 'Path to the manifest file if want to split bundle, ex. ./output/base.manifest.json',
+  }, {
+    command: '--read-global-cache',
+    description: 'Try to fetch transformed JS code from the global cache, if configured.',
+    default: false,
   },
 ];

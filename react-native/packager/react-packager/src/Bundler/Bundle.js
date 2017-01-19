@@ -100,7 +100,7 @@ class Bundle extends BundleBase {
     if (options.runMainModule) {
       /* $FlowFixMe: this is unsound, as nothing enforces runBeforeMainModule
        * to be available if `runMainModule` is true. Refactor. */
-       // @Denis
+      // @Denis
       // options.runBeforeMainModule.forEach(this._addRequireCall, this);
       options.runBeforeMainModule.forEach(moduleName => {
         super.getModules()

@@ -14,6 +14,9 @@ const ModuleTransport = require('../lib/ModuleTransport');
 
 export type FinalizeOptions = {
   allowUpdates?: boolean,
+  /* $FlowFixMe(>=0.36.0 site=react_native_fb) Flow error detected during the
+   * deploy of Flow v0.36.0. To see the error, remove this comment and run Flow
+   */
   runBeforeMainModule?: Array<mixed>,
   runMainModule?: boolean,
 };
@@ -49,6 +52,7 @@ class BundleBase {
   setMainModuleId(moduleId: number) {
     this._mainModuleId = moduleId;
   }
+
   // @Denis
   getMainModuleName() {
     return this._mainModuleName;
@@ -57,6 +61,7 @@ class BundleBase {
   setMainModuleName(moduleName: string) {
     this._mainModuleName = moduleName;
   }
+
   addModule(module: ModuleTransport) {
     if (!(module instanceof ModuleTransport)) {
       throw new Error('Expected a ModuleTransport object');

@@ -315,85 +315,6 @@ describe('Bundle', () => {
     });
   });
 
-  // @mc-zone
-  describe('manifest bundle', () => {
-    pit('exclude polyfills and requireCalls in manifest', () => {
-      const modules = [
-        {
-          bundle: bundle,
-          id:0,
-          code: 'foo',
-          sourceCode: 'foo',
-          sourcePath: 'foo path',
-          name: 'path/foo.js',
-        },
-        {
-          bundle: bundle,
-          id:'prefix-1',
-          code: 'bar',
-          sourceCode: 'bar',
-          sourcePath: 'bar path',
-          name: 'path/bar.js',
-        },
-        {
-          bundle: bundle,
-          id:2,
-          code: 'foobar',
-          sourceCode: 'foobar',
-          sourcePath: 'foobar path',
-          name: 'path/foobar.js',
-        },
-        {
-          bundle: bundle,
-          id:3,
-          code: 'uname module',
-          sourceCode: 'uname module',
-          sourcePath: '',
-        },
-        {
-          bundle: bundle,
-          id:4,
-          code: 'polyfill module',
-          sourceCode: 'polyfill module',
-          sourcePath: '',
-          isPolyfill: true,
-        },
-        {
-          bundle: bundle,
-          id:5,
-          code: ';require(0);',
-          sourceCode: ';require(0);',
-          sourcePath: '',
-          isRequireCall: true,
-        }
-      ];
-
-      return Promise.all(modules.map(module => addModule(module))).then(() => {
-      }).then(() => {
-        bundle.setMainModuleId(0);
-        bundle.finalize({
-          runBeforeMainModule: [],
-          runMainModule: true,
-        });
-        const manifest = bundle.getManifest();
-        expect(manifest).toEqual({
-          modules:{
-            'path/foo.js': {
-              id: 0,
-            },
-            'path/bar.js': {
-              id: 'prefix-1',
-            },
-            'path/foobar.js': {
-              id: 2
-            }
-          },
-          lastId:5
-        });
-      });
-    });
-  });
-
   describe('main module id:', function() {
     it('can save a main module ID', function() {
       const id = 'arbitrary module ID';
@@ -561,9 +482,7 @@ function resolverFor(code, map) {
   };
 }
 
-// @mc-zone
-// function addModule({bundle, code, sourceCode, sourcePath, map, virtual, polyfill, meta, id = ''}) {
-function addModule({bundle, code, sourceCode, sourcePath, map, virtual, polyfill, meta, id = '', name, isPolyfill,  isRequireCall}) {
+function addModule({bundle, code, sourceCode, sourcePath, map, virtual, polyfill, meta, id = ''}) {
   return bundle.addModule(
     resolverFor(code, map),
     null,
@@ -577,10 +496,6 @@ function addModule({bundle, code, sourceCode, sourcePath, map, virtual, polyfill
       meta,
       virtual,
       polyfill,
-      // @mc-zone
-      name,
-      isPolyfill,
-      isRequireCall,
     }),
   );
 }
