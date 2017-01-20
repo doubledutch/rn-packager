@@ -16,6 +16,7 @@ const DependencyGraph = require('../node-haste');
 const declareOpts = require('../lib/declareOpts');
 const defaults = require('../../../defaults');
 const pathJoin = require('path').join;
+const crypto = require('crypto')
 
 import type ResolutionResponse from '../node-haste/DependencyGraph/ResolutionResponse';
 import type Module from '../node-haste/Module';
@@ -216,7 +217,8 @@ class Resolver {
           /* $FlowFixMe: `getModuleId` is monkey-patched so may not exist */
           // @Denis 以 Module name 替代
           // resolvedDeps[depName] = resolutionResponse.getModuleId(depModule);
-          resolvedDeps[depName] = depModule.moduleName;
+          const hash = crypto.createHash('md5').update(depModule.moduleName).digest('hex')
+          resolvedDeps[depName] = hash;
         }
       });
 
@@ -232,7 +234,7 @@ class Resolver {
       depName in resolvedDeps
         // @Denis
         // ? `${JSON.stringify(resolvedDeps[depName])} /* ${depName} */`
-        ? `'${resolvedDeps[depName]}'`
+        ? `0x${resolvedDeps[depName]}`
         : codeMatch;
 
     const codeParts = dependencyOffsets.reduceRight((codeBits, offset) => {
@@ -303,6 +305,8 @@ class Resolver {
 }
 
 function defineModuleCode(moduleName, code, verboseName = '', dev = true) {
+  const hash = crypto.createHash('md5').update(verboseName).digest('hex')
+
   return [
     `__d(/* ${verboseName} */`,
     'function(global, require, module, exports) {', // module factory
@@ -310,7 +314,7 @@ function defineModuleCode(moduleName, code, verboseName = '', dev = true) {
     '\n}, ',
     // @Denis
     // `${JSON.stringify(moduleName)}`, // module id, null = id map. used in ModuleGraph
-    `${JSON.stringify(verboseName)}`,
+    `0x${hash}`,
     dev ? `, null, ${JSON.stringify(verboseName)}` : '',
     ');',
   ].join('');
