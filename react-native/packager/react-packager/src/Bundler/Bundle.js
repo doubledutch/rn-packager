@@ -18,13 +18,13 @@ const _ = require('lodash');
 const base64VLQ = require('./base64-vlq');
 const crypto = require('crypto');
 
-import type {SourceMap, CombinedSourceMap, MixedSourceMap} from '../lib/SourceMap';
-import type {GetSourceOptions, FinalizeOptions} from './BundleBase';
+import type {SourceMap, CombinedSourceMap, MixedSourceMap } from '../lib/SourceMap';
+import type {GetSourceOptions, FinalizeOptions } from './BundleBase';
 
 export type Unbundle = {
   startupModules: Array<*>,
-  lazyModules: Array<*>,
-  groups: Map<number, Set<number>>,
+    lazyModules: Array <*>,
+      groups: Map < number, Set < number >>,
 };
 
 const SOURCEMAPPING_URL = '\n\/\/# sourceMappingURL=';
@@ -41,7 +41,7 @@ class Bundle extends BundleBase {
   _sourceMap: boolean;
   _sourceMapUrl: string | void;
 
-  constructor({sourceMapUrl, dev, minify, ramGroups}: {
+  constructor({ sourceMapUrl, dev, minify, ramGroups }: {
     sourceMapUrl?: string,
     dev?: boolean,
     minify?: boolean,
@@ -66,7 +66,7 @@ class Bundle extends BundleBase {
      * using an instance typed as the base class would be broken. This must be
      * refactored.
      */
-    resolver: {wrapModule: (options: any) => Promise<{code: any, map: any}>},
+    resolver: { wrapModule: (options: any) => Promise<{ code: any, map: any }> },
     resolutionResponse: mixed,
     module: mixed,
     /* $FlowFixMe: erroneous change of signature. */
@@ -83,7 +83,7 @@ class Bundle extends BundleBase {
       meta: moduleTransport.meta,
       minify: this._minify,
       dev: this._dev,
-    }).then(({code, map}) => {
+    }).then(({ code, map }) => {
       // If we get a map from the transformer we'll switch to a mode
       // were we're combining the source maps as opposed to
       if (!this._shouldCombineSourceMaps && map != null) {
@@ -91,7 +91,7 @@ class Bundle extends BundleBase {
       }
 
       this.replaceModuleAt(
-        index, new ModuleTransport({...moduleTransport, code, map}));
+        index, new ModuleTransport({ ...moduleTransport, code, map }));
     });
   }
 
@@ -105,12 +105,15 @@ class Bundle extends BundleBase {
       options.runBeforeMainModule.forEach(moduleName => {
         super.getModules()
           .filter(module => module.name === moduleName)
-          .forEach(module => this._addRequireCall(module.id, module.name));
+          .forEach(module => {
+            const name = crypto.createHash('md5').update(module.name).digest('hex')
+            this._addRequireCall(module.id, name)
+          });
       }, this);
       /* $FlowFixMe: this is unsound, as nothing enforces the module ID to have
        * been set beforehand. */
-      // this._addRequireCall(super.getMainModuleId());
-      this._addRequireCall(super.getMainModuleId(), super.getMainModuleName());
+      const name = crypto.createHash('md5').update(super.getMainModuleName()).digest('hex')
+      this._addRequireCall(super.getMainModuleId(), name);
     }
 
     super.finalize(options);
@@ -129,7 +132,7 @@ class Bundle extends BundleBase {
       virtual: true,
       sourceCode: code,
       sourcePath: name + '.js',
-      meta: {preloaded: true},
+      meta: { preloaded: true },
       // @mc-zone
       isRequireCall: true,
     }));
@@ -138,7 +141,7 @@ class Bundle extends BundleBase {
 
   _getInlineSourceMap(dev) {
     if (this._inlineSourceMap == null) {
-      const sourceMap = this.getSourceMap({excludeSource: true, dev});
+      const sourceMap = this.getSourceMap({ excludeSource: true, dev });
       /*eslint-env node*/
       const encoded = new Buffer(JSON.stringify(sourceMap)).toString('base64');
       this._inlineSourceMap = 'data:application/json;base64,' + encoded;
@@ -211,7 +214,7 @@ class Bundle extends BundleBase {
       if (options.excludeSource) {
         /* $FlowFixMe: assume the map is not empty if we got here. */
         if (map.sourcesContent && map.sourcesContent.length) {
-          map = Object.assign({}, map, {sourcesContent: []});
+          map = Object.assign({}, map, { sourcesContent: [] });
         }
       }
 
@@ -226,7 +229,7 @@ class Bundle extends BundleBase {
     return result;
   }
 
-  getSourceMap(options: {excludeSource?: boolean}): MixedSourceMap {
+  getSourceMap(options: { excludeSource?: boolean }): MixedSourceMap {
     super.assertFinalized();
 
     if (this._shouldCombineSourceMaps) {
@@ -261,12 +264,12 @@ class Bundle extends BundleBase {
       modules: Object,
       lastId: number,
     } = {
-      modules: {},
-      lastId:0,
-    };
+        modules: {},
+        lastId: 0,
+      };
     modules.forEach(module => {
       // Filter out polyfills and requireCalls
-      if (module.name && !module.isPolyfill && !module.isRequireCall ) {
+      if (module.name && !module.isPolyfill && !module.isRequireCall) {
         manifest.modules[module.name] = {
           id: module.id,
         };
@@ -301,7 +304,7 @@ class Bundle extends BundleBase {
     for (let i = 0; i < modules.length; i++) {
       const module = modules[i];
       const code = module.code;
-      let lastCharNewLine  = false;
+      let lastCharNewLine = false;
       moduleLines[module.sourcePath] = 0;
       for (let t = 0; t < code.length; t++) {
         if (t === 0 && i === 0) {
@@ -354,10 +357,10 @@ class Bundle extends BundleBase {
       '}',
       '</style>',
       '<h3> Module paths and transformed code: </h3>',
-      this.getModules().map(function(m) {
+      this.getModules().map(function (m) {
         return '<div> <h4> Path: </h4>' + m.sourcePath + '<br/> <h4> Source: </h4>' +
-               '<code><pre class="collapsed" onclick="this.classList.remove(\'collapsed\')">' +
-               _.escape(m.code) + '</pre></code></div>';
+          '<code><pre class="collapsed" onclick="this.classList.remove(\'collapsed\')">' +
+          _.escape(m.code) + '</pre></code></div>';
       }).join('\n'),
     ].join('\n');
   }
@@ -378,7 +381,7 @@ class Bundle extends BundleBase {
   }
 
   static fromJSON(json) {
-    const bundle = new Bundle({sourceMapUrl: json.sourceMapUrl});
+    const bundle = new Bundle({ sourceMapUrl: json.sourceMapUrl });
 
     bundle._sourceMapUrl = json.sourceMapUrl;
     bundle._numRequireCalls = json.numRequireCalls;
@@ -396,20 +399,20 @@ function generateSourceMapForVirtualModule(module): SourceMap {
   let mappings = 'AAAA;';
 
   for (let i = 1; i < module.code.split('\n').length; i++) {
-    mappings +=  'AACA;';
+    mappings += 'AACA;';
   }
 
   return {
     version: 3,
-    sources: [ module.sourcePath ],
+    sources: [module.sourcePath],
     names: [],
     mappings: mappings,
     file: module.sourcePath,
-    sourcesContent: [ module.sourceCode ],
+    sourcesContent: [module.sourceCode],
   };
 }
 
-function shouldPreload({meta}) {
+function shouldPreload({ meta }) {
   return meta && meta.preloaded;
 }
 
@@ -420,7 +423,7 @@ function partition(array, predicate) {
   return [included, excluded];
 }
 
-function * filter(iterator, predicate) {
+function* filter(iterator, predicate) {
   for (const value of iterator) {
     if (predicate(value)) {
       yield value;
@@ -428,14 +431,14 @@ function * filter(iterator, predicate) {
   }
 }
 
-function * subtree(moduleTransport: ModuleTransport, moduleTransportsByPath, seen = new Set()) {
+function* subtree(moduleTransport: ModuleTransport, moduleTransportsByPath, seen = new Set()) {
   seen.add(moduleTransport.id);
   /* $FlowFixMe: there may not be a `meta` object */
-  for (const [, {path}] of moduleTransport.meta.dependencyPairs || []) {
+  for (const [, { path }] of moduleTransport.meta.dependencyPairs || []) {
     const dependency = moduleTransportsByPath.get(path);
     if (dependency && !seen.has(dependency.id)) {
       yield dependency.id;
-      yield * subtree(dependency, moduleTransportsByPath, seen);
+      yield* subtree(dependency, moduleTransportsByPath, seen);
     }
   }
 }
@@ -500,8 +503,8 @@ function createGroups(ramGroups: Array<string>, lazyModules) {
       console.warn(
         /* $FlowFixMe: this assumes the element exists. */
         `Module ${byId.get(moduleId)} belongs to groups ${
-          parentNames.join(', ')}, and ${lastName
-          }. Removing it from all groups.`
+        parentNames.join(', ')}, and ${lastName
+        }. Removing it from all groups.`
       );
     }
   }

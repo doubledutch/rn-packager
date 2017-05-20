@@ -20,8 +20,8 @@ const crypto = require('crypto')
 
 import type ResolutionResponse from '../node-haste/DependencyGraph/ResolutionResponse';
 import type Module from '../node-haste/Module';
-import type {SourceMap} from '../lib/SourceMap';
-import type {Options as TransformOptions} from '../JSTransformer/worker/worker';
+import type {SourceMap } from '../lib/SourceMap';
+import type {Options as TransformOptions } from '../JSTransformer/worker/worker';
 
 const validateOpts = declareOpts({
   projectRoots: {
@@ -97,16 +97,16 @@ class Resolver {
 
   _depGraph: DependencyGraph;
   _minifyCode: (filePath: string, code: string, map: SourceMap) =>
-    Promise<{code: string, map: SourceMap}>;
+    Promise<{ code: string, map: SourceMap }>;
   _polyfillModuleNames: Array<string>;
 
-  constructor(options: {resetCache: boolean}) {
+  constructor(options: { resetCache: boolean }) {
     const opts = validateOpts(options);
 
     this._depGraph = new DependencyGraph({
       roots: opts.projectRoots,
       assetExts: opts.assetExts,
-      ignoreFilePath: function(filepath) {
+      ignoreFilePath: function (filepath) {
         return filepath.indexOf('__tests__') !== -1 ||
           (opts.blacklistRE && opts.blacklistRE.test(filepath));
       },
@@ -151,176 +151,176 @@ class Resolver {
     options: {},
     transformOptions: TransformOptions,
     onProgress?: ?(finishedModules: number, totalModules: number) => mixed,
-    getModuleId: mixed,
-  ): Promise<ResolutionResponse> {
-    const {platform, recursive} = getDependenciesValidateOpts(options);
-    return this._depGraph.getDependencies({
-      entryPath,
-      platform,
-      transformOptions,
-      recursive,
-      onProgress,
-    }).then(resolutionResponse => {
-      this._getPolyfillDependencies().reverse().forEach(
-        polyfill => resolutionResponse.prependDependency(polyfill)
-      );
-
-      resolutionResponse.getModuleId = getModuleId;
-      return resolutionResponse.finalize();
-    });
-  }
-
-  getModuleSystemDependencies(options: {}): Array<Module> {
-    const opts = getDependenciesValidateOpts(options);
-
-    const prelude = opts.dev
-        ? pathJoin(__dirname, 'polyfills/prelude_dev.js')
-        : pathJoin(__dirname, 'polyfills/prelude.js');
-
-    const moduleSystem = defaults.moduleSystem;
-
-    return [
-      prelude,
-      moduleSystem,
-    ].map(moduleName => this._depGraph.createPolyfill({
-      file: moduleName,
-      id: moduleName,
-      dependencies: [],
-    }));
-  }
-
-  _getPolyfillDependencies(): Array<Module> {
-    const polyfillModuleNames = defaults.polyfills.concat(this._polyfillModuleNames);
-
-    return polyfillModuleNames.map(
-      (polyfillModuleName, idx) => this._depGraph.createPolyfill({
-        file: polyfillModuleName,
-        id: polyfillModuleName,
-        dependencies: polyfillModuleNames.slice(0, idx),
-      })
+      getModuleId: mixed,
+  ): Promise < ResolutionResponse > {
+  const {platform, recursive } = getDependenciesValidateOpts(options);
+  return this._depGraph.getDependencies({
+    entryPath,
+    platform,
+    transformOptions,
+    recursive,
+    onProgress,
+  }).then(resolutionResponse => {
+    this._getPolyfillDependencies().reverse().forEach(
+      polyfill => resolutionResponse.prependDependency(polyfill)
     );
-  }
 
-  resolveRequires(
-    resolutionResponse: ResolutionResponse,
-    module: Module,
-    code: string,
-    dependencyOffsets: Array<number> = [],
-  ): string {
-    const resolvedDeps = Object.create(null);
+    resolutionResponse.getModuleId = getModuleId;
+    return resolutionResponse.finalize();
+  });
+}
 
-    // here, we build a map of all require strings (relative and absolute)
-    // to the canonical ID of the module they reference
-    resolutionResponse.getResolvedDependencyPairs(module)
-      .forEach(([depName, depModule]) => {
-        if (depModule) {
-          /* $FlowFixMe: `getModuleId` is monkey-patched so may not exist */
-          // @Denis 以 Module name 替代
-          // resolvedDeps[depName] = resolutionResponse.getModuleId(depModule);
-          const hash = crypto.createHash('md5').update(depModule.moduleName).digest('hex')
-          resolvedDeps[depName] = hash;
-        }
-      });
+getModuleSystemDependencies(options: {}): Array < Module > {
+  const opts = getDependenciesValidateOpts(options);
 
-    // if we have a canonical ID for the module imported here,
-    // we use it, so that require() is always called with the same
-    // id for every module.
-    // Example:
-    // -- in a/b.js:
-    //    require('./c') => require(3);
-    // -- in b/index.js:
-    //    require('../a/c') => require(3);
-    const replaceModuleId = (codeMatch, quote, depName) =>
-      depName in resolvedDeps
-        // @Denis
-        // ? `${JSON.stringify(resolvedDeps[depName])} /* ${depName} */`
-        ? `0x${resolvedDeps[depName]}`
-        : codeMatch;
+  const prelude = opts.dev
+    ? pathJoin(__dirname, 'polyfills/prelude_dev.js')
+    : pathJoin(__dirname, 'polyfills/prelude.js');
 
-    const codeParts = dependencyOffsets.reduceRight((codeBits, offset) => {
-      const first = codeBits.shift();
-      codeBits.unshift(
-        first.slice(0, offset),
-        first.slice(offset).replace(/(['"])([^'"']*)\1/, replaceModuleId),
-      );
-      return codeBits;
-    }, [code]);
+  const moduleSystem = defaults.moduleSystem;
 
-    return codeParts.join('');
-  }
+  return [
+    prelude,
+    moduleSystem,
+  ].map(moduleName => this._depGraph.createPolyfill({
+    file: moduleName,
+    id: moduleName,
+    dependencies: [],
+  }));
+}
 
-  wrapModule({
-    resolutionResponse,
-    module,
-    name,
-    map,
-    code,
-    meta = {},
-    dev = true,
-    minify = false,
-  }: {
+_getPolyfillDependencies(): Array < Module > {
+  const polyfillModuleNames = defaults.polyfills.concat(this._polyfillModuleNames);
+
+  return polyfillModuleNames.map(
+    (polyfillModuleName, idx) => this._depGraph.createPolyfill({
+      file: polyfillModuleName,
+      id: polyfillModuleName,
+      dependencies: polyfillModuleNames.slice(0, idx),
+    })
+  );
+}
+
+resolveRequires(
+  resolutionResponse: ResolutionResponse,
+  module: Module,
+  code: string,
+  dependencyOffsets: Array < number > = [],
+): string {
+  const resolvedDeps = Object.create(null);
+
+  // here, we build a map of all require strings (relative and absolute)
+  // to the canonical ID of the module they reference
+  resolutionResponse.getResolvedDependencyPairs(module)
+    .forEach(([depName, depModule]) => {
+      if (depModule) {
+        /* $FlowFixMe: `getModuleId` is monkey-patched so may not exist */
+        // @Denis 以 Module name 替代
+        // resolvedDeps[depName] = resolutionResponse.getModuleId(depModule);
+        const hash = crypto.createHash('md5').update(depModule.moduleName).digest('hex')
+        resolvedDeps[depName] = hash;
+      }
+    });
+
+  // if we have a canonical ID for the module imported here,
+  // we use it, so that require() is always called with the same
+  // id for every module.
+  // Example:
+  // -- in a/b.js:
+  //    require('./c') => require(3);
+  // -- in b/index.js:
+  //    require('../a/c') => require(3);
+  const replaceModuleId = (codeMatch, quote, depName) =>
+    depName in resolvedDeps
+      // @Denis
+      // ? `${JSON.stringify(resolvedDeps[depName])} /* ${depName} */`
+      ? `'${resolvedDeps[depName]}'`
+      : codeMatch;
+
+  const codeParts = dependencyOffsets.reduceRight((codeBits, offset) => {
+    const first = codeBits.shift();
+    codeBits.unshift(
+      first.slice(0, offset),
+      first.slice(offset).replace(/(['"])([^'"']*)\1/, replaceModuleId),
+    );
+    return codeBits;
+  }, [code]);
+
+  return codeParts.join('');
+}
+
+wrapModule({
+  resolutionResponse,
+  module,
+  name,
+  map,
+  code,
+  meta = {},
+  dev = true,
+  minify = false,
+}: {
     resolutionResponse: ResolutionResponse,
     module: Module,
     name: string,
     map: SourceMap,
     code: string,
     meta?: {
-      dependencyOffsets?: Array<number>,
+      dependencyOffsets?: Array < number >,
     },
     dev?: boolean,
     minify?: boolean,
   }) {
-    if (module.isJSON()) {
-      code = `module.exports = ${code}`;
-    }
-
-    if (module.isPolyfill()) {
-      code = definePolyfillCode(code);
-    } else {
-      /* $FlowFixMe: `getModuleId` is monkey-patched so may not exist */
-      const moduleId = resolutionResponse.getModuleId(module);
-      code = this.resolveRequires(
-        resolutionResponse,
-        module,
-        code,
-        meta.dependencyOffsets
-      );
-      code = defineModuleCode(moduleId, code, name, dev);
-    }
-
-    return minify
-      ? this._minifyCode(module.path, code, map)
-      : Promise.resolve({code, map});
+  if (module.isJSON()) {
+    code = `module.exports = ${code}`;
   }
 
-  minifyModule(
-    {path, code, map}: {path: string, code: string, map: SourceMap},
-  ): Promise<{code: string, map: SourceMap}> {
-    return this._minifyCode(path, code, map);
+  if (module.isPolyfill()) {
+    code = definePolyfillCode(code);
+  } else {
+    /* $FlowFixMe: `getModuleId` is monkey-patched so may not exist */
+    const moduleId = resolutionResponse.getModuleId(module);
+    code = this.resolveRequires(
+      resolutionResponse,
+      module,
+      code,
+      meta.dependencyOffsets
+    );
+    code = defineModuleCode(moduleId, code, name, dev);
   }
 
-  getDependencyGraph(): DependencyGraph {
-    return this._depGraph;
-  }
+  return minify
+    ? this._minifyCode(module.path, code, map)
+    : Promise.resolve({ code, map });
+}
+
+minifyModule(
+  { path, code, map }: { path: string, code: string, map: SourceMap },
+): Promise < { code: string, map: SourceMap } > {
+  return this._minifyCode(path, code, map);
+}
+
+getDependencyGraph(): DependencyGraph {
+  return this._depGraph;
+}
 }
 
 function defineModuleCode(moduleName, code, verboseName = '', dev = true) {
   const hash = crypto.createHash('md5').update(verboseName).digest('hex')
-
+  console.log(moduleName)
   return [
     `__d(/* ${verboseName} */`,
     'function(global, require, module, exports) {', // module factory
-      code,
+    code,
     '\n}, ',
     // @Denis
     // `${JSON.stringify(moduleName)}`, // module id, null = id map. used in ModuleGraph
-    `0x${hash}`,
+    `'${hash}'`,
     dev ? `, null, ${JSON.stringify(verboseName)}` : '',
     ');',
   ].join('');
 }
 
-function definePolyfillCode(code,) {
+function definePolyfillCode(code, ) {
   return [
     '(function(global) {',
     code,
