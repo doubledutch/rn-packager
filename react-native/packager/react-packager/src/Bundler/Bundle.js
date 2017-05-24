@@ -106,13 +106,17 @@ class Bundle extends BundleBase {
         super.getModules()
           .filter(module => module.name === moduleName)
           .forEach(module => {
-            const name = crypto.createHash('md5').update(module.name).digest('hex')
+            const name = this._dev ?
+              module.name :
+              crypto.createHash('md5').update(module.name).digest('hex')
             this._addRequireCall(module.id, name)
           });
       }, this);
       /* $FlowFixMe: this is unsound, as nothing enforces the module ID to have
        * been set beforehand. */
-      const name = crypto.createHash('md5').update(super.getMainModuleName()).digest('hex')
+      const name = this._dev ?
+        super.getMainModuleName() :
+        crypto.createHash('md5').update(super.getMainModuleName()).digest('hex')
       this._addRequireCall(super.getMainModuleId(), name);
     }
 
@@ -123,7 +127,10 @@ class Bundle extends BundleBase {
   // _addRequireCall(moduleId: string) {
   _addRequireCall(moduleId: string, moduleName: string) {
     // const code = `;require(${JSON.stringify(moduleId)});`;
-    const code = `;require('${moduleName}');`;
+    const code = this._dev ?
+      `;require('${moduleName}');` :
+      `;require(0x${moduleName});`;
+
     const name = 'require-' + moduleId;
     super.addModule(new ModuleTransport({
       name,

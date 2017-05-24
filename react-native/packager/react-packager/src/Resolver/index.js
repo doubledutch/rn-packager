@@ -234,7 +234,7 @@ resolveRequires(
     depName in resolvedDeps
       // @Denis
       // ? `${JSON.stringify(resolvedDeps[depName])} /* ${depName} */`
-      ? `'${resolvedDeps[depName]}'`
+      ? `0x${resolvedDeps[depName]}`
       : codeMatch;
 
   const codeParts = dependencyOffsets.reduceRight((codeBits, offset) => {
@@ -314,7 +314,7 @@ function defineModuleCode(moduleName, code, verboseName = '', dev = true) {
     '\n}, ',
     // @Denis
     // `${JSON.stringify(moduleName)}`, // module id, null = id map. used in ModuleGraph
-    `'${hash}'`,
+    `0x${hash}`,
     dev ? `, null, ${JSON.stringify(verboseName)}` : '',
     ');',
   ].join('');
