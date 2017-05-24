@@ -8,7 +8,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 
 # Set terminal title
-echo -en "\033]0;React Packager\a"
+echo -en "\033]0;DD React Packager\a"
 clear
 
 THIS_DIR=$(dirname "$0")
@@ -16,5 +16,5 @@ pushd "$THIS_DIR"
 source ./packager.sh
 popd
 
-echo "Process terminated. Press <enter> to close the window"
+echo "DD Process terminated. Press <enter> to close the window"
 read

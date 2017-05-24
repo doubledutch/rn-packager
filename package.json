@@ -1,6 +1,6 @@
 {
   "name": "dd-rn-packager",
-  "version": "0.40.10",
+  "version": "0.40.11",
   "description": "Based on Facebook Packager v0.40.0, support Core & Business JS Separate.",
   "bin": {
     "rnpackager": "bin/rnpackager"
@@ -113,10 +113,10 @@
     "mock-fs": "^3.11.0",
     "opener": "1.4.2",
     "portfinder": "0.4.0",
-    "react": "~15.4.0-rc.4",
-    "react-dom": "~15.4.0-rc.4",
+    "react": "~15.4.2",
+    "react-dom": "~15.4.2",
     "react-redux": "4.4.6",
-    "react-test-renderer": "~15.4.0-rc.4",
+    "react-test-renderer": "~15.4.2",
     "redux": "3.6.0",
     "redux-thunk": "2.1.0",
     "shelljs": "0.6.0",

@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  */
- 'use strict';
+'use strict';
 
 var blacklist = require('../packager/blacklist');
 var path = require('path');
@@ -69,8 +69,12 @@ function getProjectRoots() {
     // Packager is running from node_modules.
     // This is the default case for all projects created using 'react-native init'.
     return [path.resolve(__dirname, '../../..')];
+  } else if (__dirname.match(/node_modules[\/\\]dd-rn-packager[\/\\]react-native[\/\\]local-cli$/)) {
+    // Packager is running from node_modules.
+    // This is the default case for all projects created using 'react-native init'.
+    return [path.resolve(__dirname, '../../../..')];
   } else if (__dirname.match(/Pods[\/\\]React[\/\\]packager$/)) {
-     // React Native was installed using CocoaPods.
+    // React Native was installed using CocoaPods.
     return [path.resolve(__dirname, '../../..')];
   } else {
     // @Denis 当前执行目录为项目根目录，polyfills还是在rn-packager目录下
