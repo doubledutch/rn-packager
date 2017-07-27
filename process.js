@@ -1,9 +1,8 @@
 const ModuleTransport = require('./node_modules/metro-bundler/build/lib/ModuleTransport.js')
 const fs = require('fs')
 
-module.exports = function(manifestFileContents, manifestOutputFile) {
+module.exports = function (manifestFileContents, manifestOutputFile) {
 	return function (modules) {
-		//console.log(modules.map((m) => typeof m))
 		const repackedModules = modules.map((m) => new ModuleTransport({
 			name: m.name,
 			id: m.id + 0,
@@ -16,14 +15,14 @@ module.exports = function(manifestFileContents, manifestOutputFile) {
 			map: m.map
 		}))
 
-	  	if (manifestFileContents) {
-	  		modules = modules.filter((module) => {
+		if (manifestFileContents) {
+			modules = modules.filter((module) => {
 				const sourcePath = module.sourcePath
 					.replace(process.cwd() + '/node_modules/', '')
 					.replace(process.cwd(), '.')
 				return !manifestFileContents.modules[sourcePath]
-	  		})
-	  	}
+			})
+		}
 
 		if (manifestOutputFile) {
 			const manifest = {
@@ -39,6 +38,6 @@ module.exports = function(manifestFileContents, manifestOutputFile) {
 			throw manifestOutputFile
 		}
 
-	  return modules;
+		return modules;
 	}
 }

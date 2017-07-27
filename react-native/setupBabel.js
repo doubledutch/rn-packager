@@ -40,7 +40,6 @@ function getOnlyList() {
  * support Flow type annotations.
  */
 function setupBabel() {
-  console.log(getOnlyList())
   babelRegisterOnly(getOnlyList());
 }
 

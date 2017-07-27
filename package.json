@@ -1,6 +1,6 @@
 {
   "name": "dd-rn-packager",
-  "version": "0.46.4",
+  "version": "0.46.6",
   "description": "Based on Facebook Packager v0.46.4, support Core & Business JS Separate.",
   "bin": {
     "rnpackager": "bin/rnpackager"
@@ -83,7 +83,6 @@
     "prop-types": "^15.5.8",
     "react-clone-referenced-element": "^1.0.1",
     "react-devtools-core": "2.3.1",
-    "react-native": "file:react-native",
     "react-timer-mixin": "^0.13.2",
     "react-transform-hmr": "^1.0.4",
     "rebound": "^0.0.13",

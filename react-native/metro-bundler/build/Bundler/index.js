@@ -774,7 +774,7 @@ function verifyRootExists(root) {
 
 function createModuleIdFactory() {
   const fileToIdMap = Object.create(null);
-  let nextId = 10000;
+  let nextId = 0;
   return (_ref17) => {
     let modulePath = _ref17.path;
     if (!(modulePath in fileToIdMap)) {

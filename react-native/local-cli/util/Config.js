@@ -125,13 +125,18 @@ function getProjectPath() {
   return path.resolve(__dirname, '../..');
 }
 
-const resolveSymlink = (roots) =>
-  roots.concat(
-    findSymlinksPaths(
-      path.join(getProjectPath(), 'node_modules'),
-      roots
-    )
-  );
+const resolveSymlink = (roots) => {
+  try {
+    return roots.concat(
+      findSymlinksPaths(
+        path.join(getProjectPath(), 'node_modules'),
+        roots
+      )
+    );
+  } catch (e) {
+    return roots;
+  }
+}
 
 /**
  * Module capable of getting the configuration out of a given file.
@@ -149,15 +154,10 @@ const Config = {
     getPlatforms: () => [],
     getPolyfillModuleNames: () => [],
     getProjectRoots: () => {
-      console.log('hello')
-      console.log(resolveSymlink([path.resolve(process.env.REACT_NATIVE_APP_ROOT)]))
       const root = process.env.REACT_NATIVE_APP_ROOT;
       if (root) {
         return resolveSymlink([path.resolve(root)]);
       } else {
-        console.log(process.cwd());
-        console.log(path.resolve(process.cwd()));
-        console.log(resolveSymlink([path.resolve(process.cwd())]));
         return resolveSymlink([path.resolve(process.cwd())]);
       }
       return resolveSymlink([getProjectPath()]);
