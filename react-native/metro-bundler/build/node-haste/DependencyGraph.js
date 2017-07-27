@@ -10,7 +10,7 @@
  * @format
  */
 
-'use strict';function _asyncToGenerator(fn) {return function () {var gen = fn.apply(this, arguments);return new Promise(function (resolve, reject) {function step(key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {return Promise.resolve(value).then(function (value) {step("next", value);}, function (err) {step("throw", err);});}}return step("next");});};}
+'use strict'; function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 const AssetResolutionCache = require('./AssetResolutionCache');
 const DependencyGraphHelpers = require('./DependencyGraph/DependencyGraphHelpers');
@@ -26,14 +26,14 @@ const invariant = require('fbjs/lib/invariant');
 const isAbsolutePath = require('absolute-path');
 const parsePlatformFilePath = require('./lib/parsePlatformFilePath');
 const path = require('path');
-const util = require('util');var _require =
+const util = require('util'); var _require =
 
 
 
 
 
-require('../Logger');const createActionEndEntry = _require.createActionEndEntry,createActionStartEntry = _require.createActionStartEntry,log = _require.log;var _require2 =
-require('events');const EventEmitter = _require2.EventEmitter;
+  require('../Logger'); const createActionEndEntry = _require.createActionEndEntry, createActionStartEntry = _require.createActionStartEntry, log = _require.log; var _require2 =
+    require('events'); const EventEmitter = _require2.EventEmitter;
 
 
 
@@ -77,25 +77,21 @@ class DependencyGraph extends EventEmitter {
 
 
 
-  constructor(config)
-
-
-
-
-  {
+  constructor(config) {
     super();
     invariant(
-    config.opts.maxWorkerCount >= 1,
-    'worker count must be greater or equal to 1');
+      config.opts.maxWorkerCount >= 1,
+      'worker count must be greater or equal to 1');
 
     this._opts = config.opts;
     this._filesByDirNameIndex = new FilesByDirNameIndex(
-    config.initialHasteFS.getAllFiles());
+      config.initialHasteFS.getAllFiles());
 
     this._assetResolutionCache = new AssetResolutionCache({
       assetExtensions: new Set(config.opts.assetExts),
       getDirFiles: dirPath => this._filesByDirNameIndex.getAllFiles(dirPath),
-      platforms: config.opts.platforms });
+      platforms: config.opts.platforms
+    });
 
     this._haste = config.haste;
     this._hasteFS = config.initialHasteFS;
@@ -119,24 +115,28 @@ class DependencyGraph extends EventEmitter {
       retainAllFiles: true,
       roots: opts.roots,
       useWatchman: opts.useWatchman,
-      watch: opts.watch });
+      watch: opts.watch
+    });
 
   }
 
-  static load(opts) {return _asyncToGenerator(function* () {
+  static load(opts) {
+    return _asyncToGenerator(function* () {
       const initializingPackagerLogEntry = log(
-      createActionStartEntry('Initializing Packager'));
+        createActionStartEntry('Initializing Packager'));
 
       opts.reporter.update({ type: 'dep_graph_loading' });
-      const haste = DependencyGraph._createHaste(opts);var _ref =
-      yield haste.build();const hasteFS = _ref.hasteFS,moduleMap = _ref.moduleMap;
+      const haste = DependencyGraph._createHaste(opts); var _ref =
+        yield haste.build(); const hasteFS = _ref.hasteFS, moduleMap = _ref.moduleMap;
       log(createActionEndEntry(initializingPackagerLogEntry));
       opts.reporter.update({ type: 'dep_graph_loaded' });
       return new DependencyGraph({
         haste,
         initialHasteFS: hasteFS,
         initialModuleMap: moduleMap,
-        opts });})();
+        opts
+      });
+    })();
 
   }
 
@@ -154,32 +154,37 @@ class DependencyGraph extends EventEmitter {
     return null;
   }
 
-  _onHasteChange(_ref2) {let eventsQueue = _ref2.eventsQueue,hasteFS = _ref2.hasteFS,moduleMap = _ref2.moduleMap;
+  _onHasteChange(_ref2) {
+    let eventsQueue = _ref2.eventsQueue, hasteFS = _ref2.hasteFS, moduleMap = _ref2.moduleMap;
     this._hasteFS = hasteFS;
     this._filesByDirNameIndex = new FilesByDirNameIndex(hasteFS.getAllFiles());
     this._assetResolutionCache.clear();
     this._moduleMap = moduleMap;
-    eventsQueue.forEach((_ref3) => {let type = _ref3.type,filePath = _ref3.filePath;return (
-        this._moduleCache.processFileChange(type, filePath));});
+    eventsQueue.forEach((_ref3) => {
+      let type = _ref3.type, filePath = _ref3.filePath; return (
+        this._moduleCache.processFileChange(type, filePath));
+    });
 
     this.emit('change');
   }
 
-  _createModuleCache() {const
+  _createModuleCache() {
+    const
     _opts = this._opts;
     return new ModuleCache(
-    {
-      assetDependencies: _opts.assetDependencies,
-      depGraphHelpers: this._helpers,
-      getClosestPackage: this._getClosestPackage.bind(this),
-      getTransformCacheKey: _opts.getTransformCacheKey,
-      globalTransformCache: _opts.globalTransformCache,
-      moduleOptions: _opts.moduleOptions,
-      reporter: _opts.reporter,
-      roots: _opts.roots,
-      transformCode: _opts.transformCode },
+      {
+        assetDependencies: _opts.assetDependencies,
+        depGraphHelpers: this._helpers,
+        getClosestPackage: this._getClosestPackage.bind(this),
+        getTransformCacheKey: _opts.getTransformCacheKey,
+        globalTransformCache: _opts.globalTransformCache,
+        moduleOptions: _opts.moduleOptions,
+        reporter: _opts.reporter,
+        roots: _opts.roots,
+        transformCode: _opts.transformCode
+      },
 
-    _opts.platforms);
+      _opts.platforms);
 
   }
 
@@ -188,12 +193,11 @@ class DependencyGraph extends EventEmitter {
      * the given entryPath has.
      */
   getShallowDependencies(
-  entryPath,
-  transformOptions)
-  {
+    entryPath,
+    transformOptions) {
     return this._moduleCache.
-    getModule(entryPath).
-    getDependencies(transformOptions);
+      getModule(entryPath).
+      getDependencies(transformOptions);
   }
 
   getWatcher() {
@@ -211,25 +215,14 @@ class DependencyGraph extends EventEmitter {
     return Promise.resolve(this._moduleCache.getAllModules());
   }
 
-  getDependencies(_ref4)
-
-
-
-
-
-
-
-
-
-
-
-  {let entryPath = _ref4.entryPath,options = _ref4.options,platform = _ref4.platform,onProgress = _ref4.onProgress;var _ref4$recursive = _ref4.recursive;let recursive = _ref4$recursive === undefined ? true : _ref4$recursive;
+  getDependencies(_ref4) {
+    let entryPath = _ref4.entryPath, options = _ref4.options, platform = _ref4.platform, onProgress = _ref4.onProgress; var _ref4$recursive = _ref4.recursive; let recursive = _ref4$recursive === undefined ? true : _ref4$recursive;
     platform = this._getRequestPlatform(entryPath, platform);
     const absPath = this._getAbsolutePath(entryPath);
     const dirExists = filePath => {
       try {
         return fs.lstatSync(filePath).isDirectory();
-      } catch (e) {}
+      } catch (e) { }
       return false;
     };
     const req = new ResolutionRequest({
@@ -243,20 +236,22 @@ class DependencyGraph extends EventEmitter {
       platform,
       preferNativePlatform: this._opts.preferNativePlatform,
       resolveAsset: (dirPath, assetName) =>
-      this._assetResolutionCache.resolve(dirPath, assetName, platform),
-      sourceExts: this._opts.sourceExts });
+        this._assetResolutionCache.resolve(dirPath, assetName, platform),
+      sourceExts: this._opts.sourceExts
+    });
 
 
     const response = new ResolutionResponse(options);
 
     return req.
-    getOrderedDependencies({
-      response,
-      transformOptions: options.transformer,
-      onProgress,
-      recursive }).
+      getOrderedDependencies({
+        response,
+        transformOptions: options.transformer,
+        onProgress,
+        recursive
+      }).
 
-    then(() => response);
+      then(() => response);
   }
 
   matchFilesByPattern(pattern) {
@@ -266,7 +261,7 @@ class DependencyGraph extends EventEmitter {
   _getRequestPlatform(entryPath, platform) {
     if (platform == null) {
       platform = parsePlatformFilePath(entryPath, this._opts.platforms).
-      platform;
+        platform;
     } else if (!this._opts.platforms.has(platform)) {
       throw new Error('Unrecognized platform: ' + platform);
     }
@@ -287,21 +282,22 @@ class DependencyGraph extends EventEmitter {
     }
 
     throw new NotFoundError(
-    'Cannot find entry file %s in any of the roots: %j',
-    filePath,
-    this._opts.roots);
+      'Cannot find entry file %s in any of the roots: %j',
+      filePath,
+      this._opts.roots);
 
   }
 
   createPolyfill(options) {
     return this._moduleCache.createPolyfill(options);
-  }}
+  }
+}
 
 
 function NotFoundError() {
   /* $FlowFixMe: monkey-patching */
   Error.call(this);
-  Error.captureStackTrace(this, this.constructor);for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {args[_key] = arguments[_key];}
+  Error.captureStackTrace(this, this.constructor); for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) { args[_key] = arguments[_key]; }
   var msg = util.format.apply(util, args);
   this.message = msg;
   this.type = this.name = 'NotFoundError';

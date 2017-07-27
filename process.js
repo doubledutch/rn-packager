@@ -1,4 +1,4 @@
-const ModuleTransport = require('./node_modules/metro-bundler/build/lib/ModuleTransport.js')
+const ModuleTransport = require('./react-native/metro-bundler/build/lib/ModuleTransport.js')
 const fs = require('fs')
 
 module.exports = function (manifestFileContents, manifestOutputFile) {
@@ -35,7 +35,6 @@ module.exports = function (manifestFileContents, manifestOutputFile) {
 				}, {})
 			}
 			fs.writeFileSync(manifestOutputFile, JSON.stringify(manifest, 2, 2), 'utf8')
-			throw manifestOutputFile
 		}
 
 		return modules;

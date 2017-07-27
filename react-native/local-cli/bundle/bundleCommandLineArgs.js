@@ -32,9 +32,6 @@ module.exports = [
     command: '--manifest-file [path]',
     description: 'Path to the manifest file if want to split bundle, ex. ./output/base.manifest.json',
   }, {
-    command: '--create-module-id-factory [string]',
-    description: 'Specify a custom createModuleIdFactory to be used',
-  }, {
     command: '--dev [boolean]',
     description: 'If false, warnings are disabled and the bundle is minified',
     parse: (val) => val === 'false' ? false : true,

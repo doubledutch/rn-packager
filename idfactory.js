@@ -19,7 +19,7 @@ module.exports = function (manifestFileContents, manifestOutputFile) {
 				.replace(process.cwd() + '/node_modules/', '')
 				.replace(process.cwd(), '.')
 
-			if (manifestFileContents.modules[sourcePath]) {
+			if (manifestFileContents && manifestFileContents.modules[sourcePath]) {
 				return manifestFileContents.modules[sourcePath].id
 			}
 

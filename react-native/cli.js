@@ -8,7 +8,7 @@
  */
 'use strict';
 
-require('./packager/babelRegisterOnly')([
+require('./metro-bundler/build/babelRegisterOnly')([
   /local-cli/
 ]);
 
