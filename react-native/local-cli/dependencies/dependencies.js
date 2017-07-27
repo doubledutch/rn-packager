@@ -8,7 +8,7 @@
  */
 'use strict';
 
-const ReactPackager = require('../../packager/react-packager');
+const ReactPackager = require('../../metro-bundler');
 
 const denodeify = require('denodeify');
 const fs = require('fs');
@@ -21,17 +21,19 @@ function dependencies(argv, config, args, packagerInstance) {
   }
 
   const transformModulePath =
-      args.transformer ? path.resolve(args.transformer) :
+    args.transformer ? path.resolve(args.transformer) :
       typeof config.getTransformModulePath === 'function' ? config.getTransformModulePath() :
-      undefined;
+        undefined;
 
   const packageOpts = {
     projectRoots: config.getProjectRoots(),
     blacklistRE: config.getBlacklistRE(),
     getTransformOptions: config.getTransformOptions,
+    hasteImpl: config.hasteImpl,
     transformModulePath: transformModulePath,
     extraNodeModules: config.extraNodeModules,
     verbose: config.verbose,
+    workerPath: config.getWorkerPath(),
   };
 
   const relativePath = packageOpts.projectRoots.map(root =>
@@ -44,6 +46,9 @@ function dependencies(argv, config, args, packagerInstance) {
   const options = {
     platform: args.platform,
     entryFile: relativePath,
+    dev: args.dev,
+    minify: !args.dev,
+    generateSourceMaps: !args.dev,
   };
 
   const writeToFile = args.output;
@@ -72,7 +77,7 @@ function dependencies(argv, config, args, packagerInstance) {
         ? denodeify(outStream.end).bind(outStream)()
         : Promise.resolve();
     }
-  ));
+    ));
 }
 
 module.exports = {
@@ -91,6 +96,11 @@ module.exports = {
     }, {
       command: '--transformer [path]',
       description: 'Specify a custom transformer to be used'
+    }, {
+      command: '--dev [boolean]',
+      description: 'If false, skip all dev-only code path',
+      parse: (val) => val === 'false' ? false : true,
+      default: true,
     }, {
       command: '--verbose',
       description: 'Enables logging',

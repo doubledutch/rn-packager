@@ -20,6 +20,21 @@ module.exports = [
     command: '--transformer [string]',
     description: 'Specify a custom transformer to be used',
   }, {
+    command: '--post-process-modules [string]',
+    description: 'Specify a custom postProcessModules to be used',
+  }, {
+    command: '--create-module-id-factory [string]',
+    description: 'Specify a custom createModuleIdFactory to be used',
+  }, {
+    command: '--manifest-output [string]',
+    description: 'File name where to store the manifest file for bundle splitting, ex. ./output/base.manifest.json',
+  }, {
+    command: '--manifest-file [path]',
+    description: 'Path to the manifest file if want to split bundle, ex. ./output/base.manifest.json',
+  }, {
+    command: '--create-module-id-factory [string]',
+    description: 'Specify a custom createModuleIdFactory to be used',
+  }, {
     command: '--dev [boolean]',
     description: 'If false, warnings are disabled and the bundle is minified',
     parse: (val) => val === 'false' ? false : true,
@@ -35,6 +50,13 @@ module.exports = [
     command: '--sourcemap-output [string]',
     description: 'File name where to store the sourcemap file for resulting bundle, ex. /tmp/groups.map',
   }, {
+    command: '--sourcemap-sources-root [string]',
+    description: 'Path to make sourcemap\'s sources entries relative to, ex. /root/dir',
+  }, {
+    command: '--sourcemap-use-absolute-path',
+    description: 'Report SourceMapURL using its full path',
+    default: false,
+  }, {
     command: '--assets-dest [string]',
     description: 'Directory name where to store assets referenced in the bundle',
   }, {
@@ -45,13 +67,6 @@ module.exports = [
     command: '--reset-cache',
     description: 'Removes cached files',
     default: false,
-  }, {
-  // @mc-zone
-    command: '--manifest-output [string]',
-    description: 'File name where to store the manifest file for bundle splitting, ex. ./output/base.manifest.json',
-  }, {
-    command: '--manifest-file [path]',
-    description: 'Path to the manifest file if want to split bundle, ex. ./output/base.manifest.json',
   }, {
     command: '--read-global-cache',
     description: 'Try to fetch transformed JS code from the global cache, if configured.',

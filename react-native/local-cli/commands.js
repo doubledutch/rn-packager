@@ -10,22 +10,20 @@
  */
 'use strict';
 
-const getUserCommands = require('./core/getCommands');
-// @Denis
-const fs = require('fs');
+const { getProjectCommands } = require('./core');
 
-import type {ConfigT} from './util/Config';
+import type { RNConfig } from './core';
 
-export type Command = {
+export type CommandT = {
   name: string,
   description?: string,
   usage?: string,
-  func: (argv: Array<string>, config: ConfigT, args: Object) => ?Promise<void>,
+  func: (argv: Array<string>, config: RNConfig, args: Object) => ?Promise<void>,
   options?: Array<{
     command: string,
     description?: string,
     parse?: (val: string) => any,
-    default?: (config: ConfigT) => any | any,
+    default?: ((config: RNConfig) => mixed) | mixed,
   }>,
   examples?: Array<{
     desc: string,
@@ -44,6 +42,7 @@ const documentedCommands = [
   require('./library/library'),
   require('./bundle/bundle'),
   require('./bundle/unbundle'),
+  require('./eject/eject'),
   require('./link/link'),
   require('./link/unlink'),
   require('./install/install'),
@@ -52,24 +51,7 @@ const documentedCommands = [
   require('./logAndroid/logAndroid'),
   require('./logIOS/logIOS'),
   require('./dependencies/dependencies'),
-  // @Denis
-  {
-    name: 'version',
-    description: 'print version',
-    func: printVersion,
-  }
 ];
-
-// @Denis
-function printVersion() {
-  return new Promise((resolve, reject) => {
-    var version = JSON.parse(
-      fs.readFileSync(path.resolve(__dirname, '../../../package.json'), 'utf8')
-    ).version;
-    console.log(version);
-    resolve();
-  });
-}
 
 // The user should never get here because projects are inited by
 // using `react-native-cli` from outside a project directory.
@@ -85,10 +67,10 @@ const undocumentedCommands = [
   },
 ];
 
-const commands: Array<Command> = [
+const commands: Array<CommandT> = [
   ...documentedCommands,
   ...undocumentedCommands,
-  ...getUserCommands(),
+  ...getProjectCommands(),
 ];
 
 module.exports = commands;

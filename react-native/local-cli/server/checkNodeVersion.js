@@ -9,10 +9,10 @@
 'use strict';
 
 var chalk = require('chalk');
-var formatBanner = require('./formatBanner');
+var formatBanner = require('../../metro-bundler/build/lib/formatBanner');
 var semver = require('semver');
 
-module.exports = function() {
+module.exports = function () {
   if (!semver.satisfies(process.version, '>=4')) {
     var engine = semver.satisfies(process.version, '<1')
       ? 'Node'
