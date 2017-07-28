@@ -10,7 +10,7 @@ module.exports = function (manifestFileContents, manifestOutputFile) {
 					return manifestFileContents.modules[key].id
 				}
 				return id
-			}, 0)
+			}, 0) + 1
 		}
 
 		return (_moduleRef) => {
