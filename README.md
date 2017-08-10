@@ -1,61 +1,31 @@
-# ReactNative Packager
----
+# DoubleDutch React Native Manifest Bundler
+(NOTE: this is a deviated fork from https://github.com/react-component/rn-packager)
 
-Standalone ReactNative Packager without framework code.
+## React Bundler Process
+React bundler works similarly to webpack by transpiling (ES6->ES5) all included sources off the root source file. This will include all React Native libraries necessary for bridging between JS and native code.
 
-![node.js](https://img.shields.io/badge/node.js-%3E=_4.0.0-green.svg?style=flat-square)
-![react-native](https://img.shields.io/badge/react--native-%3D_0.39.0-green.svg)
-![react](https://img.shields.io/badge/react-~_15.3.1-green.svg)
+The size of the bridging JS is prohibitively large to allow for an over-the-air deployment of more than a single bundle. A gzipped bundle is around ~1mb before adding any custom logic.
 
-## Do What?
+## Manifest Process Overview
+https://github.com/facebook/react-native/pull/10804
+An attempt to reduce bundle size is to create a base bundle that includes all bridging JS, and embed that in the mobile binaries. When creating the base bundle, we also output a manifest file which maps included sources to their corresponding IDs in the base bundle.
 
-1. bundle-split, solution from https://github.com/facebook/react-native/pull/10804
-2. use module name as before (ps: core.bundle and app.bundle are different bundle session, so module ids may conflict)
+This manifest may be passed into the bundler to "skip" any sources included that are present in the base bundle, and to instead load them by ID. This allows for us to concatenate the base bundle with the application bundle and end up with a runnable bundle.
 
-## Dependencies
+The resulting size of feature bundles is considerably lower than the original bundles as we can omit all of the bridging JS.
 
-```json
-"devDependencies": {
-  "rn-packager": "~0.10.0",
-  "react-native": "0.39.2",
-  "react": "~15.4.0-rc.4"
-}
-```
-## Bundle
+### Steps
+1. Generate a base bundle that only includes the RN (or other common/unchangeable) base libraries
+2. Output manifest file from base bundle creation with source->ID mappings
+3. Generate the application bundle and pass in the manifeset
+4. Application bundle will start reference IDs at an index greater than the last ID in the manifest (prevent collisions)
+5. Application bundle will omit base library JS, but will map references properly
 
-Now u can use `manifest.json` file to generate `core modules`.
+## Components
+### Metro Bundler
+https://github.com/facebook/metro-bundler
 
-1. Bundle ur core bundle and output `manifest.json`
-2. Bundle ur app bundle with `manifest.json` that Step 1 generated.
+### React Native CLI
+https://github.com/facebook/react-native/tree/master/local-cli
 
-
-### Bundle core
-
-```shell
-$ rnpackager bundle --entry-file node_modules/react-native/Libraries/react-native/react-native.js --bundle-output ~/Dowloads/core.ios.bundle --platform ios --manifest-output core.ios.manifest.json
-```
-
-### Bundle app
-
-```shell
-rnpackager bundle --entry-file foo.js --bundle-output ~/Dowloads/foo.ios.bundle --platform ios --manifest-file core.ios.manifest.json
-```
-
-## Server
-
-```shell
-$ rnpackager start
-```
-
-## Demo
-
-```shell
-$ cd tests
-$ npm i
-$ rnpackager start
-```
-
-visit:
-
-* [http://localhost:8081/index.ios.bundle?platform=ios](http://localhost:8081/index.ios.bundle?platform=ios)
-* [http://localhost:8081/index.android.bundle?platform=android](http://localhost:8081/index.android.bundle?platform=android)
+## Changes
