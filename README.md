@@ -8,6 +8,7 @@ The size of the bridging JS is prohibitively large to allow for an over-the-air 
 
 ## Manifest Process Overview
 https://github.com/facebook/react-native/pull/10804
+
 An attempt to reduce bundle size is to create a base bundle that includes all bridging JS, and embed that in the mobile binaries. When creating the base bundle, we also output a manifest file which maps included sources to their corresponding IDs in the base bundle.
 
 This manifest may be passed into the bundler to "skip" any sources included that are present in the base bundle, and to instead load them by ID. This allows for us to concatenate the base bundle with the application bundle and end up with a runnable bundle.
@@ -24,6 +25,7 @@ The resulting size of feature bundles is considerably lower than the original bu
 ## Components
 ### Metro Bundler
 https://github.com/facebook/metro-bundler
+
 The bundler does the bulk of the work:
 
 1. Transpiling using Babel
@@ -32,6 +34,7 @@ The bundler does the bulk of the work:
 
 ### React Native CLI
 https://github.com/facebook/react-native/tree/master/local-cli
+
 The CLI just offers a command-line friendly way to trigger the bundler and pass on arguments.
 
 ## Changes
@@ -43,6 +46,7 @@ The changes made are relatively simple:
 
 ### CLI
 https://github.com/doubledutch/rn-packager/blob/master/react-native/local-cli/bundle/bundleCommandLineArgs.js
+
 1. **--manifest-output** - The location to write the manifest to after bundling
 2. **--manifest-file** - The input manifest to be used to omit included sources
 3. **--post-process-modules** - The input script file to pre-process the bundle and omit libraries in the manifest (https://github.com/doubledutch/rn-packager/blob/master/process.js)
