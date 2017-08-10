@@ -47,3 +47,10 @@ https://github.com/doubledutch/rn-packager/blob/master/react-native/local-cli/bu
 2. **--manifest-file** - The input manifest to be used to omit included sources
 3. **--post-process-modules** - The input script file to pre-process the bundle and omit libraries in the manifest (https://github.com/doubledutch/rn-packager/blob/master/process.js)
 4. **--create-module-id-factory** - The input script file to assign IDs to included sources and to map base bundle scripts to their corresponding IDs (https://github.com/doubledutch/rn-packager/blob/master/idfactory.js)
+
+## Updating RN Versions
+Copy the sources from the local-cli (in the main RN project) and metro-bundler to this repo in the react-native folder. Look at the diff and reapply the command line argument wiring.
+
+That should largely be it.
+
+NOTE: Each time RN updates their sources does not necessarily require making changes to the packager. In fact, packager changes are much less common than RN functionality changes.
