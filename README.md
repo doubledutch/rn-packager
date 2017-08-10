@@ -24,8 +24,26 @@ The resulting size of feature bundles is considerably lower than the original bu
 ## Components
 ### Metro Bundler
 https://github.com/facebook/metro-bundler
+The bundler does the bulk of the work:
+
+1. Transpiling using Babel
+2. Walking dependency tree
+3. Outputting the resulting bundle and initialization code
 
 ### React Native CLI
 https://github.com/facebook/react-native/tree/master/local-cli
+The CLI just offers a command-line friendly way to trigger the bundler and pass on arguments.
 
 ## Changes
+
+The changes made are relatively simple:
+
+* Add command line arguments to pass through a couple scripts to the metro bundler
+* We need to manage assigning of module IDs, and the ability to omit certain modules (sources) from being written to the bundle
+
+### CLI
+https://github.com/doubledutch/rn-packager/blob/master/react-native/local-cli/bundle/bundleCommandLineArgs.js
+1. **--manifest-output** - The location to write the manifest to after bundling
+2. **--manifest-file** - The input manifest to be used to omit included sources
+3. **--post-process-modules** - The input script file to pre-process the bundle and omit libraries in the manifest (https://github.com/doubledutch/rn-packager/blob/master/process.js)
+4. **--create-module-id-factory** - The input script file to assign IDs to included sources and to map base bundle scripts to their corresponding IDs (https://github.com/doubledutch/rn-packager/blob/master/idfactory.js)
